@@ -21,13 +21,36 @@ def read_raw(filename, width=2048, height=1024, verbose=False):
     # Reading RAW image from the ShadoBox detector. The image is saved as 16
     # bit, with the camera width and height. We swap the endianness of the
     # image to display it nicely.
-    image = numpy.fromfile(filename, dtype=numpy.uint16, count=-1).reshape(
-        height, width).byteswap()
+    image = numpy.fromfile(filename, dtype=numpy.uint16,
+                           count=-1).reshape(height, width).byteswap()
     # Flip image upside down and left-right, so we can look at it without
     # craning our neck.
     image = numpy.flipud(image)
 
     return image
+
+
+def ask_user(blurb, choices):
+    """
+    Ask for user input.
+    Based on function in MasterThesisIvan.ini
+    """
+    print(blurb)
+    for Counter, Item in enumerate(sorted(choices)):
+        print '    * [' + str(Counter) + ']:', Item
+    selection = []
+    while selection not in range(len(choices)):
+        try:
+            selection = int(input(' '.join(['Please enter the choice you',
+                                            'want [0-' +
+                                            str(len(choices) - 1) +
+                                            ']:'])))
+        except:
+            print 'You actually have to select *something*'
+        if selection not in range(len(choices)):
+            print 'Try again with a valid choice'
+    print 'You selected', sorted(choices)[selection]
+    return sorted(choices)[selection]
 
 # Display all images consistently
 plt.rc('image', cmap='gray', interpolation='nearest')
@@ -36,23 +59,76 @@ plt.rc('lines', linewidth=2)
 
 StartPath = os.path.join(os.path.expanduser('~'), 'Data20', 'Gantry', 'Images')
 ImageFolders = sorted(glob.glob(os.path.join(StartPath, '*')))
-for c, i in enumerate(ImageFolders):
-    print '%s: %s' % (c, os.path.basename(i))
+for c, folder in enumerate(ImageFolders):
+    print 'Folder %s (%s) contains %s files' % (c, os.path.basename(folder),
+                                                len(glob.glob(os.path.join(
+                                                    folder, '*.raw'))))
 
-Flat = glob.glob(os.path.join(ImageFolders[1], '*40kV*.raw'))[0]
-Image = glob.glob(os.path.join(ImageFolders[2], '*40kV*.raw'))[0]
+print 80 * '-'
 
-FlatImage = read_raw(Flat)
-ImageImage = read_raw(Image)
-CorrectedImage = ImageImage - FlatImage
+FlatFolder = ask_user('From which folder should we load the flats?',
+                     ImageFolders)
+ProjectionFolder = ask_user('From which folder should we load the images from?',
+                           ImageFolders)
 
-plt.subplot(311)
-plt.imshow(FlatImage)
-plt.title('flat')
-plt.subplot(312)
-plt.imshow(ImageImage)
-plt.title('image')
-plt.subplot(313)
-plt.imshow(CorrectedImage)
-plt.title('corrected image')
+# Load dark images
+print 'Loading dark images'
+DarkNames = glob.glob(os.path.join(StartPath, 'Darks', '*.raw'))
+print '\tReading in %s images in %s' % (len(DarkNames),
+                                        os.path.join(StartPath, 'Darks'))
+DarkImages = [read_raw(i) for i in DarkNames]
+# Calculating values
+print 'Calculating average dark image'
+AverageDark = numpy.average(DarkImages, axis=0)
+
+# Loading flat images
+print 'Loading flat images'
+FlatNames = glob.glob(os.path.join(FlatFolder, '*.raw'))
+print '\tReading in %s images in %s' % (len(FlatNames), FlatFolder)
+FlatImages = [read_raw(i) for i in FlatNames]
+# Calculating values
+print 'Calculating average flat image'
+AverageFlat = numpy.average(FlatImages, axis=0)
+
+plt.ion()
+plt.figure(figsize=[16, 10])
+
+# Loading projections and correcting each one
+ProjectionImages = sorted(glob.glob(os.path.join(ProjectionFolder, '*.raw')))
+for c, p in enumerate(ProjectionImages):
+    print '%s/%s: Reading projection %s' % (c + 1, len(ProjectionImages),
+                                            os.path.basename(p))
+    ProjectionImage = read_raw(p)
+    Voltage = int(p.split('_')[1][:-2])
+    Current = int(p.split('_')[2][:-2])
+    ExposureTime = int(p.split('_')[3][:-4])
+
+    # P=-ln((P-D)/(F-D)), while D and F are mean darks and mean flats
+    CorrectedImage = -numpy.log(numpy.divide(numpy.subtract(ProjectionImage,
+                                                            AverageDark),
+                                             numpy.subtract(AverageFlat,
+                                                            AverageDark)))
+
+    plt.clf()
+    plt.subplot(231)
+    plt.imshow(AverageFlat)
+    plt.title('Average flat')
+    plt.subplot(232)
+    plt.imshow(AverageDark)
+    plt.title('Average dark')
+    plt.subplot(233)
+    plt.imshow(ProjectionImage)
+    plt.title('Raw projection\n(%s)' % os.path.basename(p))
+    plt.subplot(212)
+    plt.imshow(CorrectedImage)
+    plt.title('Corrected image')
+    plt.suptitle('%s\nImage acquired at %skV and %suA\nwith a '
+                 'Detector exposure time of %ss' % (os.path.basename(
+        p.split('_')[0]), Voltage, Current, ExposureTime))
+    plt.savefig(os.path.splitext(p)[0] + '.figure.png')
+    plt.imsave(os.path.splitext(p)[0] + '.corrected.png', CorrectedImage)
+    plt.draw()
+
+print 'Done'
+plt.ioff()
 plt.show()
