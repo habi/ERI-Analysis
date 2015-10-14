@@ -67,9 +67,9 @@ for c, folder in enumerate(ImageFolders):
 print 80 * '-'
 
 FlatFolder = ask_user('From which folder should we load the flats?',
-                     ImageFolders)
+                     ImageFolders[1:])
 ProjectionFolder = ask_user('From which folder should we load the images from?',
-                           ImageFolders)
+                           ImageFolders[1:])
 
 # Load dark images
 print 'Loading dark images'
