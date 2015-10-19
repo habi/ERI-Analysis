@@ -24,34 +24,36 @@ colors = ["#82DFB2",
           "#D8D56D",
           "#A4E280"]
 
-for counter, folder in enumerate(HamamatsuFolders):
-    print 'Reading folder %s: %s' % (counter, os.path.basename(folder))
-    ImageList = glob.glob(os.path.join(StartPath, folder, '*.raw'))
-    Voltage = [int(os.path.basename(image).split('_')[1][:-2]) for image in
-               ImageList]
-    Current = [int(os.path.basename(image).split('_')[2][:-2]) for image in
-               ImageList]
-    plt.scatter(Voltage, Current, label=os.path.basename(folder),
-                c=colors[counter], alpha=0.5)
+plt.figure(figsize=[16, 9])
+# for counter, folder in enumerate(HamamatsuFolders):
+#     print 'Reading folder %s: %s' % (counter, os.path.basename(folder))
+#     ImageList = glob.glob(os.path.join(StartPath, folder, '*.raw'))
+#     Voltage = [int(os.path.basename(image).split('_')[1][:-2]) for image in
+#                ImageList]
+#     Current = [int(os.path.basename(image).split('_')[2][:-2]) for image in
+#                ImageList]
+#     plt.scatter(Voltage, Current, label=os.path.basename(folder),
+#                 c=colors[counter], alpha=0.5)
 
 for counter, folder in enumerate(ERIFolders):
-    print 'Reading folder %s: %s' % (counter + len(HamamatsuFolders),
+    print 'Reading folder %s: %s' % (counter + len(ERIFolders),
                                      os.path.basename(folder))
     ImageList = glob.glob(os.path.join(StartPath, folder, '*.raw'))
     Voltage = [int(os.path.basename(image).split('_')[1][:-2]) for image in
                ImageList]
-    Current = [int(os.path.basename(image).split('_')[2][:-2]) for image in
-               ImageList]
+    Current = [int(os.path.basename(image).split('_')[2][:-2]) + 5 * counter
+               for image in ImageList]
     plt.scatter(Voltage, Current, label=os.path.basename(folder),
-                c=colors[counter+len(HamamatsuFolders)])
+                c=colors[counter+len(ERIFolders)])
 
 
-plt.xlabel('Voltage')
-plt.ylabel('Current')
+plt.xlabel('Voltage [kV]')
+plt.ylabel('Current [uA]')
 plt.legend(loc='best')
-plt.xlim([0, 69])
-plt.ylim([0, 99])
-# plt.tight_layout()
+plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
+                         'ERI-Analysis', 'VoltageVsCurrentSpread.png'))
+plt.xlim([25, 60])
+plt.ylim([0, 50])
 plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
                          'ERI-Analysis', 'VoltageVsCurrent.png'))
 plt.show()
