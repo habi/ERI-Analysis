@@ -48,7 +48,7 @@ for counter, folder in enumerate(ERIFolders):
                            image in ImageList])
     plt.scatter(Voltage, Current, label=os.path.basename(folder),
                 c=colors[counter+len(ERIFolders)])
-    InitialGuess =(0.07, 0.095, 9.5)
+    InitialGuess = (0.07, 0.095, 9.5)
     OptimalValues, Covariance = scipy.optimize.curve_fit(fitting_function,
                                                          Voltage, Current,
                                                          p0=InitialGuess)

@@ -54,7 +54,7 @@ Brightness = [numpy.mean(i) for i in DarkImages]
 print 'Extracting gray value STD of %s raw images' % len(DarkNames)
 STD = [numpy.std(i) for i in DarkImages]
 
-plt.figure(figsize=[16,9])
+plt.figure(figsize=[16, 9])
 plt.subplot(211)
 plt.imshow(MeanImage)
 plt.title('Mean dark image')
