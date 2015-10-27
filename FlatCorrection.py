@@ -37,13 +37,12 @@ def ask_user(blurb, choices):
     """
     print(blurb)
     for Counter, Item in enumerate(sorted(choices)):
-        print '    * [' + str(Counter) + ']:', Item
+        print '\t* [' + str(Counter) + ']:', Item
     selection = []
     while selection not in range(len(choices)):
         try:
-            selection = int(input(' '.join(['Please enter the choice you',
-                                            'want [0-' +
-                                            str(len(choices) - 1) +
+            selection = int(input(' '.join(['Please enter the choice you want',
+                                            '[0-' + str(len(choices) - 1) +
                                             ']:'])))
         except:
             print 'You actually have to select *something*'
@@ -67,9 +66,9 @@ for c, folder in enumerate(ImageFolders):
 print 80 * '-'
 
 FlatFolder = ask_user('From which folder should we load the flats?',
-                     ImageFolders[1:])
+                      ImageFolders[1:])
 ProjectionFolder = ask_user('From which folder should we load the images from?',
-                           ImageFolders[1:])
+                            ImageFolders[1:])
 
 # Load dark images
 print 'Loading dark images'
@@ -77,7 +76,6 @@ DarkNames = glob.glob(os.path.join(StartPath, 'Darks', '*.raw'))
 print '\tReading in %s images in %s' % (len(DarkNames),
                                         os.path.join(StartPath, 'Darks'))
 DarkImages = [read_raw(i) for i in DarkNames]
-# Calculating values
 print 'Calculating average dark image'
 AverageDark = numpy.average(DarkImages, axis=0)
 
@@ -85,7 +83,7 @@ AverageDark = numpy.average(DarkImages, axis=0)
 print 'Loading flat images'
 FlatNames = glob.glob(os.path.join(FlatFolder, '*.raw'))
 print '\tReading in %s images in %s' % (len(FlatNames), FlatFolder)
-FlatImages = [read_raw(i) for i in FlatNames]
+FlatImages = [read_raw(i) for i in FlatNames[::10]]
 # Calculating values
 print 'Calculating average flat image'
 AverageFlat = numpy.average(FlatImages, axis=0)
@@ -122,9 +120,9 @@ for c, p in enumerate(ProjectionImages):
     plt.subplot(212)
     plt.imshow(CorrectedImage)
     plt.title('Corrected image')
-    plt.suptitle('%s\nImage acquired at %skV and %suA\nwith a '
-                 'Detector exposure time of %ss' % (os.path.basename(
-        p.split('_')[0]), Voltage, Current, ExposureTime))
+    plt.suptitle('%s\nImage acquired at %skV and %suA\nwith a Detector '
+                 'exposure time of %ss' % (os.path.basename(p.split('_')[0]),
+                                           Voltage, Current, ExposureTime))
     plt.savefig(os.path.splitext(p)[0] + '.figure.png')
     plt.imsave(os.path.splitext(p)[0] + '.corrected.png', CorrectedImage)
     plt.draw()

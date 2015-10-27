@@ -88,8 +88,8 @@ for v, voltage in enumerate(Voltages):
         # so according to its data sheet
         if voltage < 40 and current > 100:
             print 'According to the data sheet of the Hamamtsu source, ' \
-                  'we cannot operate it safely at %s kV and %s uA' % (
-                voltage, current)
+                  'we cannot operate it safely at %s kV and %s uA' % (voltage,
+                                                                      current)
             print 'Skipping this setting...'
         else:
             OutPutPath = os.path.join(StartPath, 'Hamamatsu')
@@ -114,7 +114,7 @@ for v, voltage in enumerate(Voltages):
             print 'Acquiring image for %s seconds' % DetectorExposureTime
             sb.acquire(1, 2)
             log.info('Image %s/%s (%s) acquired at %s', (v + 1) * (c + 1),
-                     len(Voltages) * len(Currents),ImagePrefix + '.raw',
+                     len(Voltages) * len(Currents), ImagePrefix + '.raw',
                      time.strftime('%d.%m.%Y at %H:%M:%S'))
             print 'Saved image as %s_01' % ImagePrefix
 
