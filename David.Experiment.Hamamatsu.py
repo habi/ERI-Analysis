@@ -24,7 +24,7 @@ Currents = range(10, 201, 5)
 # Randomize voltages and currents to exclude hysteresis
 random.shuffle(Voltages)
 random.shuffle(Currents)
-DetectorExposureTime = 15  # Seconds, converted to when setting the detector
+DetectorExposureTime = 30  # Seconds, converted to ms when setting the detector
 
 # Check if we already have files in the designated directory. If we do,
 # then do not run the script.
@@ -44,14 +44,6 @@ log.addHandler(handler)
 log.info('Experiment started at %s', time.strftime('%d.%m.%Y at %H:%M:%S'))
 log.info(80 * '-')
 
-# Start the detector
-print 'Starting the ShadoBox detector'
-# Check if we have the camera here
-if not sb.is_camera_on():
-    sb.start()
-# Set exposure time
-sb.set_exposure_time(DetectorExposureTime * 1000)
-
 if not testing:
     print 'Starting the Hamamatsu tube'
     # Start the source with some moderate settings and let it run for five
@@ -70,6 +62,15 @@ if not testing:
     time.sleep(5 * 60 * 60)
     log.info('Source stabilization completed at %s',
              time.strftime('%d.%m.%Y at %H:%M:%S'))
+
+# Start the detector
+print 'Starting the ShadoBox detector'
+# Check if we have the camera here
+if not sb.is_camera_on():
+    sb.start()
+# Set exposure time (sb.set_exposure_time() expects ms)
+print 'Setting exposure time to %s' % DetectorExposureTime
+sb.set_exposure_time(DetectorExposureTime * 1000)
 
 # Log experiment conditions
 log.info('Source voltage will be set from %s kV to %s kV in %s steps.',
