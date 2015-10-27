@@ -70,22 +70,24 @@ FlatFolder = ask_user('From which folder should we load the flats?',
 ProjectionFolder = ask_user('From which folder should we load the images from?',
                             ImageFolders[1:])
 
+LoadEvery = 10
 # Load dark images
-print 'Loading dark images'
-DarkNames = glob.glob(os.path.join(StartPath, 'Darks', '*.raw'))
+print 'Loading every %sth dark image' % LoadEvery
+DarkNames = sorted(glob.glob(os.path.join(StartPath, 'Darks',
+                                          '*.raw')))[::LoadEvery]
 print '\tReading in %s images in %s' % (len(DarkNames),
                                         os.path.join(StartPath, 'Darks'))
 DarkImages = [read_raw(i) for i in DarkNames]
-print 'Calculating average dark image'
+print 'Calculating average of %s dark images' % len(DarkImages)
 AverageDark = numpy.average(DarkImages, axis=0)
 
 # Loading flat images
-print 'Loading flat images'
-FlatNames = glob.glob(os.path.join(FlatFolder, '*.raw'))
+print 'Loading every %sth flat image' % LoadEvery
+FlatNames = sorted(glob.glob(os.path.join(FlatFolder, '*.raw')))[::LoadEvery]
 print '\tReading in %s images in %s' % (len(FlatNames), FlatFolder)
-FlatImages = [read_raw(i) for i in FlatNames[::10]]
+FlatImages = [read_raw(i) for i in FlatNames]
 # Calculating values
-print 'Calculating average flat image'
+print 'Calculating average of %s flat images' % len(FlatImages)
 AverageFlat = numpy.average(FlatImages, axis=0)
 
 plt.ion()
