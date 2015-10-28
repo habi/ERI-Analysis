@@ -65,11 +65,12 @@ if 'anomalocaris' in platform.node() or 'vpn' in platform.node():
 else:
     StartPath = os.path.join(os.path.expanduser('~'), 'Data20', 'Gantry',
                              'Images', 'Darks')
-DarkNames = glob.glob(os.path.join(StartPath, '*.raw'))[::3]
+DarkNames = sorted(glob.glob(os.path.join(StartPath, '*.raw')))
 if not DarkNames:
     exit('No dark images found, is "%s" the correct directory?' % StartPath)
 print 'Reading in %s images in %s' % (len(DarkNames), StartPath)
 DarkImages = [read_raw(i) for i in DarkNames]
+
 # Calculating values
 print 'Calculating average dark image'
 MeanImage = numpy.mean(DarkImages, axis=0)
@@ -88,21 +89,21 @@ std = 3
 plt.imshow(contrast_stretch(MeanImage, std=std))
 plt.title('Contrast stretched average dark (mean +- %s STD)' % std)
 plt.subplot(223)
-plt.plot(Brightness, c=colors[0], label='Image mean')
+plt.plot(Brightness, c=colors[0], label='Image mean (%0.2f-%0.2f)' % (
+    numpy.min(Brightness), numpy.max(Brightness)))
 plt.axhline(numpy.mean(MeanImage), c=colors[1], alpha=0.5,
             label='Mean of average image: %0.2f' % numpy.mean(MeanImage))
 plt.axhline(numpy.mean(Brightness), c=colors[2], alpha=0.5,
             label='Mean of Brightness: %0.2f' % numpy.mean(Brightness))
 plt.legend(loc='best')
 plt.title('Brightness of %s images' % len(DarkImages))
-plt.ylim([102, 103])
 plt.subplot(224)
-plt.plot(STD, c=colors[0], label='STD')
+plt.plot(STD, c=colors[0], label='STD (%0.2f-%0.2f)' % (numpy.min(STD),
+                                                        numpy.max(STD)))
 plt.axhline(numpy.std(MeanImage), c=colors[1],
             label='STD of average image: %0.2f' % numpy.std(MeanImage))
 plt.axhline(numpy.mean(STD), c=colors[2],
             label='Mean of STD: %0.2f' % numpy.mean(STD))
 plt.legend(loc='best')
 plt.title('STD of %s images' % len(DarkImages))
-#plt.ylim(ymin=0)
 plt.show()
