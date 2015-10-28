@@ -7,6 +7,7 @@ Script to get insight into the dark images from the ShadoBox
 """
 
 # Imports
+import platform
 import numpy
 import os
 import glob
@@ -28,8 +29,24 @@ def read_raw(filename, width=2048, height=1024, verbose=False):
     # Flip image upside down and left-right, so we can look at it without
     # craning our neck.
     image = numpy.flipud(image)
-
     return image
+
+
+def contrast_stretch(image, std=3, verbose=False):
+    """
+    Clip image histogram to the mean \pm N standard deviations, according to
+    http://is.gd/IBV4Gw. I am using three standard deviations around the mean.
+    """
+    if verbose:
+        print 'Clipping image from [' + str(numpy.min(image)) + ':' + \
+              str(numpy.max(image)) + '] to',
+    clippedimage = numpy.clip(image, numpy.mean(image) - (std * numpy.std(
+        image)), numpy.mean(image) + (std * numpy.std(image)))
+    if verbose:
+        print '[' + str(numpy.min(clippedimage)) + ':' + str(numpy.max(
+            clippedimage)) + ']'
+    return clippedimage
+
 
 # Display all images consistently
 plt.rc('image', cmap='gray', interpolation='nearest')
@@ -41,33 +58,51 @@ plt.rc('axes', grid=True)
 colors = ["#84DEBD", "#D1B9D4", "#D1D171"]
 
 # Reading images
-StartPath = os.path.join(os.path.expanduser('~'), 'Data20', 'Gantry', 'Images',
-                         'Darks')
-DarkNames = glob.glob(os.path.join(StartPath, '*.raw'))
+if 'anomalocaris' in platform.node() or 'vpn' in platform.node():
+    print 'Running on OSX, setting different start path'
+    StartPath = os.path.join('/Volumes', 'e13960', 'Data20', 'Gantry', 'Images',
+                             'Darks')
+else:
+    StartPath = os.path.join(os.path.expanduser('~'), 'Data20', 'Gantry',
+                             'Images', 'Darks')
+DarkNames = glob.glob(os.path.join(StartPath, '*.raw'))[::3]
+if not DarkNames:
+    exit('No dark images found, is "%s" the correct directory?' % StartPath)
 print 'Reading in %s images in %s' % (len(DarkNames), StartPath)
 DarkImages = [read_raw(i) for i in DarkNames]
 # Calculating values
 print 'Calculating average dark image'
-MeanImage = numpy.average(DarkImages, axis=0)
-print 'Extracting brightness brightness of %s raw images' % len(DarkNames)
+MeanImage = numpy.mean(DarkImages, axis=0)
+print 'Extracting mean (brightness) of %s raw images' % len(DarkNames)
 Brightness = [numpy.mean(i) for i in DarkImages]
 print 'Extracting gray value STD of %s raw images' % len(DarkNames)
 STD = [numpy.std(i) for i in DarkImages]
 
 plt.figure(figsize=[16, 9])
-plt.subplot(211)
+plt.subplot(221)
 plt.imshow(MeanImage)
-plt.title('Mean dark image')
+plt.title('Average dark image with a min of %s and a max of'
+          ' %s' % (numpy.min(MeanImage), numpy.max(MeanImage)))
+plt.subplot(222)
+std = 3
+plt.imshow(contrast_stretch(MeanImage, std=std))
+plt.title('Contrast stretched average dark (mean +- %s STD)' % std)
 plt.subplot(223)
 plt.plot(Brightness, c=colors[0], label='Image mean')
-plt.axhline(numpy.mean(MeanImage), c=colors[1], label='Mean of average image')
-plt.axhline(numpy.mean(Brightness), c=colors[2], label='Mean of Brightness')
+plt.axhline(numpy.mean(MeanImage), c=colors[1], alpha=0.5,
+            label='Mean of average image: %0.2f' % numpy.mean(MeanImage))
+plt.axhline(numpy.mean(Brightness), c=colors[2], alpha=0.5,
+            label='Mean of Brightness: %0.2f' % numpy.mean(Brightness))
 plt.legend(loc='best')
 plt.title('Brightness of %s images' % len(DarkImages))
+plt.ylim([102, 103])
 plt.subplot(224)
 plt.plot(STD, c=colors[0], label='STD')
-plt.axhline(numpy.std(MeanImage), c=colors[1], label='STD of average image')
-plt.axhline(numpy.mean(STD), c=colors[2], label='Mean of STD')
+plt.axhline(numpy.std(MeanImage), c=colors[1],
+            label='STD of average image: %0.2f' % numpy.std(MeanImage))
+plt.axhline(numpy.mean(STD), c=colors[2],
+            label='Mean of STD: %0.2f' % numpy.mean(STD))
 plt.legend(loc='best')
 plt.title('STD of %s images' % len(DarkImages))
+#plt.ylim(ymin=0)
 plt.show()
