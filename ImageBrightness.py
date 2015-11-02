@@ -3,7 +3,8 @@
 """
 ImageBrightness | David Haberthür <david.haberthuer@psi.ch>
 
-Script to get insight into the images shot with the the ShadoBox.
+Script to get insight into the brightness of the images shot with the the
+ShadoBox.
 Adapted from DarkImages.py
 """
 
@@ -49,27 +50,27 @@ def contrast_stretch(image, std=3, verbose=False):
     return clippedimage
 
 
-def AskUser(Blurb, Choices):
+def ask_user(blurb, choices):
     """
     Ask for user input.
     Based on function in MasterThesisIvan.ini
     """
-    print(Blurb)
-    for Counter, Item in enumerate(sorted(Choices)):
+    print(blurb)
+    for Counter, Item in enumerate(sorted(choices)):
         print '    * [' + str(Counter) + ']:', Item
-    Selection = []
-    while Selection not in range(len(Choices)):
+    selection = []
+    while selection not in range(len(choices)):
         try:
-            Selection = int(input(' '.join(['Please enter the choice you',
+            selection = int(input(' '.join(['Please enter the choice you',
                                             'want [0-' +
-                                            str(len(Choices) - 1) +
+                                            str(len(choices) - 1) +
                                             ']:'])))
         except:
             print 'You actually have to select *something*'
-        if Selection not in range(len(Choices)):
+        if selection not in range(len(choices)):
             print 'Try again with a valid choice'
-    print 'You selected', sorted(Choices)[Selection]
-    return sorted(Choices)[Selection]
+    print 'You selected', sorted(choices)[selection]
+    return sorted(choices)[selection]
 
 # Display all images consistently
 plt.rc('image', cmap='gray', interpolation='nearest')
@@ -90,7 +91,7 @@ else:
 # Exclude 'Darks' folder with *-*
 Folders = glob.glob(os.path.join(StartPath, '*-*'))
 Folders = [os.path.basename(f) for f in Folders]
-SelectedFolder = AskUser('Which folder do you want to look at?', Folders)
+SelectedFolder = ask_user('Which folder do you want to look at?', Folders)
 ImageNames = sorted(glob.glob(os.path.join(StartPath, SelectedFolder,
                                            '*.raw')))
 if not ImageNames:
