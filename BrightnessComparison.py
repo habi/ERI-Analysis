@@ -154,7 +154,8 @@ for c, i in enumerate(CompareImages):
     # plt.title('%s: %s' % (c, os.path.basename(i)))
     # plt.subplot(212)
     # plt.cla()
-# Plot Brigtness with kV as x-axis (Image 0 is 25 kV)
+# Plot Brightness with kV as x-axis (Image 0 is 25 kV)
+plt.subplot(211)
 plt.plot(range(25, 25 + len(BrightnessHamamatsu)), BrightnessHamamatsu,
          c=colors[2], label=os.path.basename(os.path.dirname(i)))
 plt.plot(range(25, 25 + len(BrightnessERI)), BrightnessERI, c=colors[1],
@@ -170,10 +171,16 @@ ScalingERI = max(BrightnessERI) / float(max(CurrentERI))
 plt.plot(VoltageERI, [i * ScalingERI for i in CurrentERI], c=colors[1],
          alpha=0.5, linestyle='--',
          label='ERI: current scaled by %0.1f' % ScalingERI)
-
 plt.xlim([20, 70])
-plt.draw()
+plt.title('Average brightness compared to current')
 plt.legend(loc='best')
+plt.subplot(212)
+plt.plot([a/b for a, b in zip(BrightnessHamamatsu, BrightnessERI)],
+         label='Hamamatsu / ERI')
+plt.legend(loc='best')
+plt.title('Brightness difference')
+plt.draw()
+
 plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
                          'ERI-Analysis', 'Images',
                          'Brightness-' +
