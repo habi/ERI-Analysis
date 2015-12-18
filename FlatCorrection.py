@@ -70,7 +70,7 @@ FlatFolder = ask_user('From which folder should we load the flats?',
 ProjectionFolder = ask_user('From which folder should we load the images from?',
                             ImageFolders[1:])
 
-LoadEvery = 10
+LoadEvery = 1
 # Load dark images
 print 'Loading every %sth dark image' % LoadEvery
 DarkNames = sorted(glob.glob(os.path.join(StartPath, 'Darks',
@@ -104,10 +104,9 @@ for c, p in enumerate(ProjectionImages):
     ExposureTime = int(p.split('_')[3][:-4])
 
     # P=-ln((P-D)/(F-D)), while D and F are mean darks and mean flats
-    CorrectedImage = -numpy.log(numpy.divide(numpy.subtract(ProjectionImage,
-                                                            AverageDark),
-                                             numpy.subtract(AverageFlat,
-                                                            AverageDark)))
+    CorrectedImage = numpy.negative(numpy.log(numpy.divide(
+        numpy.subtract(ProjectionImage, AverageDark),
+        numpy.subtract(AverageFlat, AverageDark))))
 
     plt.clf()
     plt.subplot(231)
