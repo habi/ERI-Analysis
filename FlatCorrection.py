@@ -67,8 +67,8 @@ print 80 * '-'
 
 FlatFolder = ask_user('From which folder should we load the flats?',
                       ImageFolders[1:])
-ProjectionFolder = ask_user('From which folder should we load the images from?',
-                            ImageFolders[1:])
+ProjectionFolder = ask_user('From which folder should we load the images '
+                            'from?', ImageFolders[1:])
 
 LoadEvery = 1
 # Load dark images

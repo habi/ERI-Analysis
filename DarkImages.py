@@ -60,8 +60,8 @@ colors = ["#84DEBD", "#D1B9D4", "#D1D171"]
 # Reading images
 if 'anomalocaris' in platform.node() or 'vpn' in platform.node():
     print 'Running on OSX, setting different start path'
-    StartPath = os.path.join('/Volumes', 'e13960', 'Data20', 'Gantry', 'Images',
-                             'Darks')
+    StartPath = os.path.join('/Volumes', 'e13960', 'Data20', 'Gantry',
+                             'Images', 'Darks')
 else:
     StartPath = os.path.join(os.path.expanduser('~'), 'Data20', 'Gantry',
                              'Images', 'Darks')

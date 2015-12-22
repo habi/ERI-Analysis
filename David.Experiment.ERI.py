@@ -66,9 +66,9 @@ for v, voltage in enumerate(Voltages):
     current = 0
     while not current:
         try:
-            current = int(raw_input('Set source voltage to %s kV and input the '
-                                    'current shown on the ERI power supply '
-                                    '[uA]: ' % voltage))
+            current = int(raw_input('Set source voltage to %s kV and input'
+                                    ' the current shown on the ERI power '
+                                    'supply [uA]: ' % voltage))
         except ValueError:
             print('Try inputting an integer number...')
     print '%s | %s/%s | %s kV/%s uA | %s' % ('ERI', v + 1, len(Voltages),

@@ -4,6 +4,7 @@
 Line profile function used in several scripts.
 """
 
+
 def lineprofile(inputimage, coordinates=False, showimage=False, debug=False):
     """
     Function to draw a line profile from a selection in the image.
@@ -96,4 +97,3 @@ def lineprofile(inputimage, coordinates=False, showimage=False, debug=False):
         if debug:
             plt.show()
     return ((x0, y0), (x1, y1)), profileinterpolated
-
