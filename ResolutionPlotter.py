@@ -3,7 +3,7 @@
 """
 ResolutionPlotter.py | David Haberthür <david.haberthuer@psi.ch>
 
-Script to plot a line through some of the regions of the resolution phantom
+Script to plot a line through some of the regions of the resolution phantom.
 """
 
 # Imports
@@ -46,7 +46,13 @@ def contrast_stretch(image, std=3, verbose=False):
         print '[' + str(numpy.min(clippedimage)) + ':' + str(numpy.max(
             clippedimage)) + ']'
     return clippedimage
-
+    
+def display_image_parameters(image, rangecolor='r'):
+    """
+    Plot the mean +- STD of an image
+    """
+    plt.axhline(numpy.mean(image), linestyle='-', color=rangecolor, alpha=0.5, label='Mean (%0.2f) +- STD' % numpy.mean(image))
+    plt.fill_between(range(2048), numpy.mean(image) + numpy.std(image), numpy.mean(image) - numpy.std(image), alpha=0.309, color=rangecolor)
 
 # Display all images consistently
 plt.rc('image', cmap='gray', interpolation='nearest')
@@ -55,173 +61,73 @@ plt.rc('lines', linewidth=2)
 # Show background grid
 plt.rc('axes', grid=True)
 # Colors from 'I want hue'
-colors = ["#84DEBD", "#D1B9D4", "#D1D171"]
+UserColors = ["#84DEBD", "#D1B9D4", "#D1D171"]
 
 StartPath = '/sls/X02DA/data/e13960/Data20/Gantry/Images'
 FolderList = sorted(os.walk(StartPath).next()[1])
 
-print FolderList
-
 FolderToLookAt = os.path.join(StartPath, FolderList[2])
 ImageList = sorted(glob.glob(os.path.join(FolderToLookAt, '*.raw')))
 
-Img = read_raw(ImageList[-1])
-Coordinates = ((875, 450), (875, 150))
-SelectedPoints, LineProfile = lineprofiler.lineprofile(Img, Coordinates, showimage=False)
+# Prepare figure
+plt.ion()
+plt.figure(figsize=[20,9])
+plt.suptitle(os.path.basename(FolderToLookAt))
 
-plt.subplot(211)
-plt.imshow(Img)
-plt.plot((SelectedPoints[0][0], SelectedPoints[1][0]), (SelectedPoints[0][1], SelectedPoints[1][1]), color='red', marker='o')
-plt.plot(SelectedPoints[0][0], SelectedPoints[0][1], color='yellow', marker='o')
-plt.plot(SelectedPoints[1][0], SelectedPoints[1][1], color='black', marker='o')
-plt.subplot(212)
-plt.plot(LineProfile, color='red', label='Line profile')
-plt.plot(0, LineProfile[0], color='yellow', marker='o', markersize=25, alpha=0.309)
-plt.plot(len(LineProfile) - 1, LineProfile[-1], color='black', marker='o', markersize=25, alpha=0.309)
-plt.legend(loc='best')
-plt.show()
+# Grab voltage and current values from all images in folder to plot them later on
+print 'Reading voltage and current from %s images in folder %s' % (len(ImageList), FolderToLookAt)
+Voltage = [int(os.path.basename(image).split('_')[1][:-2]) for image in ImageList]
+Current = [int(os.path.basename(image).split('_')[2][:-2]) for image in ImageList]
 
+# Select three lines through resolution phantom
+LineYStart = 150
+LineLength = 800
+Coordinates = [((850, LineYStart), (850, LineYStart + LineLength)),
+               ((1150, LineYStart), (1150, LineYStart + LineLength)),
+               ((1500, LineYStart), (1500, LineYStart + LineLength))]
 
-
-
-exit()
-
-for Case in (0, 1):
-    # Grab Voltage and Current for ERI
-    if Case:
-        ImageListERI = sorted(glob.glob(os.path.join(StartPath,
-                                                     'ERI-Voltage-Current-Curve-1',
-                                                     '*.raw')))
-    else:
-        ImageListERI = sorted(glob.glob(os.path.join(StartPath,
-                                                     'ERI-Voltage-Current-Curve-'
-                                                     'Random', '*.raw')))
-
-    print 'Reading Voltage and Current from %s images' % len(ImageListERI)
-    VoltageERI = [int(os.path.basename(i).split('_')[1][:-2]) for i in ImageListERI]
-    CurrentERI = [int(os.path.basename(i).split('_')[2][:-2]) for i in ImageListERI]
-
-    # Grab Voltage and Current for ERI
-    if Case:
-        ImageListHamamatsu = sorted(glob.glob(os.path.join(StartPath,
-                                                           'Hamamatsu-KinderEgg-'
-                                                           '15s-Exposure',
-                                                           '*.raw')))
-    else:
-        ImageListHamamatsu = sorted(glob.glob(os.path.join(StartPath,
-                                                           'Hamamatsu-KinderEgg-'
-                                                           '30s-Exposure',
-                                                           '*.raw')))
-
-    print 'Reading Voltage and Current from %s images' % len(ImageListERI)
-    VoltageHamamatsu = [int(os.path.basename(i).split('_')[1][:-2]) for i in
-                        ImageListHamamatsu]
-    CurrentHamamatsu = [int(os.path.basename(i).split('_')[2][:-2]) for i in
-                        ImageListHamamatsu]
-
-    # Grab closest values from the Hamamatsu dataset and plot them afterwards
-    plt.ion()
-    plt.figure(figsize=[16, 9])
-    CompareImages = []
-    for c, i in enumerate(ImageListERI):
-        print 80 * '-'
-        print 'Finding best matching current from Hamamatsu for %s (%s kV, ' \
-              '%s mA)' % (i, VoltageERI[c], CurrentERI[c])
-        Candidates = []
-        for k in ImageListHamamatsu:
-            if str(VoltageERI[c]) + 'kV' in k:
-                Candidates.append(k)
-        IndexList = [ImageListHamamatsu.index(i) for i in Candidates]
-        # Get the closest value to the current from Hamamatsu list. Based on
-        # http://stackoverflow.com/a/9706105/323100
-        ChosenOne = min(enumerate([CurrentHamamatsu[i] for i in IndexList]),
-                        key=lambda x: abs(x[1]-CurrentERI[c]))
-        print 'Found a match in %s' % Candidates[ChosenOne[0]]
-        CompareImages.append(Candidates[ChosenOne[0]])
-
-    print 80 * '-'
-
-    VoltageMatch = [int(os.path.basename(i).split('_')[1][:-2]) for i in
-                    CompareImages]
-    CurrentMatch = [int(os.path.basename(i).split('_')[2][:-2]) for i in
-                    CompareImages]
-
-    plt.scatter(VoltageHamamatsu, CurrentHamamatsu, c=colors[0], alpha=0.25,
-                label='Hamamatsu')
-    plt.plot(VoltageERI, CurrentERI, c=colors[1], label='ERI')
-    plt.plot(VoltageMatch, CurrentMatch, c=colors[2], label='Best Match')
-    plt.legend(loc='best')
-    plt.tight_layout()
-    plt.draw()
-    plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
-                             'ERI-Analysis', 'Images',
-                             'Match-' +
-                             os.path.basename(os.path.dirname(
-                                 CompareImages[0])) + '_vs_' +
-                             os.path.basename(os.path.dirname(
-                                 ImageListERI[0])) + '.png'))
-
-    # Plot brightness of the comparable images in one plot
-    BrightnessHamamatsu = []
-    BrightnessERI = []
-    DisplayProgress = True
-    plt.figure(figsize=[16, 9])
-    for c, i in enumerate(CompareImages):
-        print '%s/%s: Comparing %s with %s' % (c + 1, len(CompareImages),
-                                               os.path.basename(i),
-                                               os.path.basename(
-                                                   ImageListERI[c]))
-        ImageERI = read_raw(ImageListERI[c])
-        ImageHamamatsu = read_raw(i)
-        BrightnessERI.append(numpy.mean(ImageERI))
-        BrightnessHamamatsu.append(numpy.mean(ImageHamamatsu))
-        # plt.subplot(221)
-        # plt.imshow(read_raw(ImageListERI[c]))
-        # plt.title('%s: %s' % (c, os.path.basename(ImageListERI[c])))
-        # plt.subplot(222)
-        # plt.imshow(read_raw(i))
-        # plt.title('%s: %s' % (c, os.path.basename(i)))
-        # plt.subplot(212)
-        # plt.cla()
-    # Plot Brightness with kV as x-axis (Image 0 is 25 kV)
-    plt.subplot(211)
-    plt.plot(range(25, 25 + len(BrightnessHamamatsu)), BrightnessHamamatsu,
-             c=colors[2], label=os.path.basename(os.path.dirname(i)))
-    plt.plot(range(25, 25 + len(BrightnessERI)), BrightnessERI, c=colors[1],
-             label=os.path.basename(os.path.dirname(ImageListERI[0])))
-    # ScalingHamamatsu = numpy.max(BrightnessHamamatsu) / \
-    #                    numpy.max(CurrentMatch)
-    # plt.plot(VoltageMatch, [i * ScalingHamamatsu for i in CurrentMatch],
-    #          c=colors[2], alpha=0.5, linestyle='--',
-    #          label='Hamamatsu, current scaled by %0.1f' % ScalingHamamatsu)
-    # ScalingERI = max(BrightnessERI) / float(max(CurrentERI))
-    # plt.plot(VoltageERI, [i * ScalingERI for i in CurrentERI], c=colors[1],
-    #          alpha=0.5, linestyle='--',
-    #          label='ERI: current scaled by %0.1f' % ScalingERI)
-    plt.xlim([20, 70])
-    plt.ylim([0, 2**12])
-    plt.xlabel('kV')
-    plt.ylabel('Mean image brightness')
-    plt.title('Average brightness compared to current')
-    plt.legend(loc='best')
-
+# Plot everything
+for ImageCounter, ImageName in enumerate(ImageList):
+    print '%02d/%s: Reading image and plotting line profile' % (ImageCounter + 1, len(ImageList))
+    # Which image are we looking at?
+    plt.subplot(221)
+    plt.cla()
+    plt.title('Voltage vs. current')
+    plt.scatter(Voltage, Current)
+    ThisVoltage = int(os.path.basename(ImageName).split('_')[1][:-2])
+    ThisCurrent = int(os.path.basename(ImageName).split('_')[2][:-2])
+    plt.plot(ThisVoltage, ThisCurrent, color='red', marker='o', markersize=15, alpha=0.309)
+    plt.xlabel('Voltage [kV]')
+    plt.ylabel('Current [uA]')
+    plt.ylim([0,75])
+    # Show the image
+    plt.subplot(222)
+    plt.cla()
+    plt.title('Image %s/%s: %s' % (ImageCounter, len(ImageList), os.path.basename(ImageName)))
+    Img = read_raw(ImageName)
+    plt.imshow(contrast_stretch(Img))
+    # Show where we select the line profiles
+    for CoordinateCounter, CurrentCoordinates in enumerate(Coordinates):  
+        print CurrentCoordinates    
+        SelectedPoints, LineProfile = lineprofiler.lineprofile(Img, CurrentCoordinates, showimage=False)
+        print len(LineProfile)
+        plt.plot((SelectedPoints[0][0], SelectedPoints[1][0]), (SelectedPoints[0][1], SelectedPoints[1][1]), color=UserColors[CoordinateCounter], marker='o')
+        plt.plot(SelectedPoints[0][0], SelectedPoints[0][1], color='yellow', marker='o')
+        plt.plot(SelectedPoints[1][0], SelectedPoints[1][1], color='black', marker='o')
+    plt.axis('off')
+    # Show the line profiles
     plt.subplot(212)
-    plt.plot([a/b for a, b in zip(BrightnessHamamatsu, BrightnessERI)],
-             label='Hamamatsu / ERI')
-    plt.ylim([0, 6])
-    plt.legend(loc='best')
-    plt.title('Brightness difference')
-    plt.tight_layout()
+    plt.cla()
+    plt.title('Line profiles')
+    for CoordinateCounter, CurrentCoordinates in enumerate(Coordinates):
+        SelectedPoints, LineProfile = lineprofiler.lineprofile(Img, CurrentCoordinates, showimage=False)
+        plt.plot(LineProfile, color=UserColors[CoordinateCounter])
+        plt.plot(0, LineProfile[0], color='yellow', marker='o', markersize=15, alpha=0.309)
+        plt.plot(len(LineProfile) - 1, LineProfile[-1], color='black', marker='o', markersize=25, alpha=0.309)
+    display_image_parameters(Img)
+    plt.legend(loc='upper right')
+    plt.xlim([0,LineLength])
+    plt.ylim([0,2**12])       
     plt.draw()
-    plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
-                             'ERI-Analysis', 'Images',
-                             'Brightness-' +
-                             os.path.basename(os.path.dirname(
-                                 CompareImages[0])) + '_vs_' +
-                             os.path.basename(os.path.dirname(
-                                 ImageListERI[0])) + '.png'))
-    plt.ioff()
-    plt.show()
-    print 'Done with case %s' % Case
-print 'Done with everything!'
-
+plt.ioff()
+plt.show()
