@@ -14,10 +14,22 @@ import scipy.optimize
 import scipy.stats
 
 StartPath = os.path.join(os.path.expanduser('~'), 'Data20', 'Gantry', 'Images')
-ERIFolders = glob.glob(os.path.join(StartPath, 'ERI*'))
+ERIFolders = glob.glob(os.path.join(StartPath, '*Wrench*'))
 
 # Colors from 'I want hue!'
-colors = ["#80DEC3", "#E8B172", "#CBBCDC", "#C1DD79"]
+colors = ["#8AE0A2",
+          "#E0B4DC",
+          "#EBB857",
+          "#C3E471",
+          "#9FCEE3",
+          "#F1A49E",
+          "#62E1D3",
+          "#E4DC56",
+          "#CED07E",
+          "#E3B074",
+          "#A6D6B1",
+          "#8BE588"]
+colors = ['#8dd3c7','#ffffb3','#bebada','#fb8072','#80b1d3','#fdb462','#b3de69','#fccde5','#d9d9d9','#bc80bd','#ccebc5','#ffed6f']
 # Wider default curves, better markers and grid
 plt.rc('lines', linewidth=2, marker='o')
 plt.rc('axes', grid=True)
@@ -26,17 +38,20 @@ plt.rc('axes', grid=True)
 def fitting_function(x, a, b, c):
     return a * numpy.exp(b * x) + c
 
+for c, i in enumerate(ERIFolders):
+    print '%s/%s: %s' % (c, len(ERIFolders), i)
+
 # Grab all images and plot values for folders
 ImageList = []
 plt.figure(figsize=[16,9])
-for counter, folder in enumerate(ERIFolders[:-1]):
+for counter, folder in enumerate(ERIFolders[:-4]):
     print 'Reading values from folder %s: %s' % (counter + 1,
                                                  os.path.basename(folder))
     ImageList += sorted(glob.glob(os.path.join(StartPath, folder, '*.raw')))
     Voltage = numpy.array([int(os.path.basename(image).split('_')[1][:-2]) for
                            image in ImageList])
     Current = numpy.array([int(os.path.basename(image).split('_')[2][:-2]) for
-                           image in ImageList])
+                           image in ImageList]) + counter
     plt.scatter(Voltage, Current, c=colors[counter], alpha=0.618,
                 label=os.path.basename(folder))
 # Extract all values
@@ -69,8 +84,8 @@ plt.plot(sorted(Voltage), sorted(ManualFit), '-', c=colors[3],
                                                           InitialGuess[2]))
 plt.xlabel('Voltage [kV]')
 plt.ylabel('Current [uA]')
-plt.xlim([20, 70])
-plt.ylim(ymin=0)
+plt.xlim([0, 75])
+plt.ylim([0, 75])
 plt.legend(loc='upper left')
 plt.tight_layout()
 plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
