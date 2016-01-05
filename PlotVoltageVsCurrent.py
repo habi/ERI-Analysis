@@ -37,8 +37,8 @@ for counter, FolderToPlot in enumerate(Folders):
                              'ERI-Analysis', 'Images',
                              'VoltageVsCurrent_' +
                              os.path.basename(FolderToPlot) + '.png'))
-    plt.xlim([0, 75])
-    plt.ylim([0, 75])
+    plt.xlim([20, 70])
+    plt.ylim([0, 60])
     plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
                              'ERI-Analysis', 'Images',
                              'VoltageVsCurrent_' +
