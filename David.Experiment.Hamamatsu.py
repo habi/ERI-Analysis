@@ -24,7 +24,7 @@ Currents = range(10, 201, 5)
 # Randomize voltages and currents to exclude hysteresis
 random.shuffle(Voltages)
 random.shuffle(Currents)
-DetectorExposureTime = 30  # Seconds, converted to ms when setting the detector
+DetectorExposureTime = 15  # Seconds, converted to ms when setting the detector
 
 # Check if we already have files in the designated directory. If we do,
 # then do not run the script.

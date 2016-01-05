@@ -62,7 +62,6 @@ for counter, folder in enumerate(ERIFolders):
                            image in ImageList])
     plt.scatter(rand_jitter(Voltage), rand_jitter(Current), c=colors[counter],
                 label=os.path.basename(folder))
-    print len(AllImages)
 # Exponential fit for *all* images
 InitialGuess = (0.05, 1e-1, 10)
 Voltage = numpy.array([int(os.path.basename(image).split('_')[1][:-2]) for
@@ -87,7 +86,7 @@ try:
         print 'No optimal exponential fit parameters found'
 except AttributeError:
     exit('You need to "module load xbl/epd" to make this script work\nAs a '
-         'consequence, the script cannot be run in PyCharm, but has to be run'
+         'consequence, the script cannot be run in PyCharm, but has to be run '
          'in the terminal...')
 ManualFit = [InitialGuess[0] * numpy.exp(InitialGuess[1] * i) +
              InitialGuess[2] for i in Voltage]

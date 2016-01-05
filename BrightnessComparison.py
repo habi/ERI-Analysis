@@ -125,7 +125,7 @@ for Case in (0, 1):
     plt.plot(VoltageERI, CurrentERI, c=colors[1], label='ERI')
     plt.plot(VoltageMatch, CurrentMatch, c=colors[2], label='Best Match')
     plt.legend(loc='best')
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.draw()
     plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
                              'ERI-Analysis', 'Images',
@@ -185,7 +185,7 @@ for Case in (0, 1):
     plt.ylim([0, 6])
     plt.legend(loc='best')
     plt.title('Brightness difference')
-    plt.tight_layout()
+    # plt.tight_layout()
     plt.draw()
     plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
                              'ERI-Analysis', 'Images',
