@@ -158,8 +158,8 @@ for c, i in enumerate(CompareImages):
     plt.subplot(gs[2:, 1:])
     plt.imshow(plt.imread(i))
     plt.axis('off')
-    plt.subplots_adjust(wspace=0.001, hspace=0.15, left=0.02, right=1,
-                        top=0.98, bottom=0.01)
+    plt.subplots_adjust(wspace=0.03, hspace=0, left=0, right=1,
+                        top=1, bottom=0)
     plt.draw()
     # Save figure and concatenated results
     plt.savefig(os.path.join(OutputPath, '%02d' % VoltageERI[c] + 'kV' +
