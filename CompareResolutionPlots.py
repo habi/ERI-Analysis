@@ -9,6 +9,7 @@ Script to compare two line profile plots with eatch other.
 # Imports
 import os
 import glob
+import numpy
 import platform
 import matplotlib
 # Make sure we are running a good version of matplotlib (i.e. > 1)
@@ -82,7 +83,8 @@ ChosenHamamatsu = AskUser('Which Hamamatsu folder shall we use to compare '
 
 # Prepare output directory
 OutputPath = os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
-                          'ERI-Analysis', 'Images', 'Comparison-' +
+                          'ERI-Analysis', 'Images', 'Resolution-Comparison',
+                          'Comparison-' +
                           os.path.basename(ChosenERI) + '_VS_' +
                           os.path.basename(ChosenHamamatsu))
 try:
@@ -159,9 +161,14 @@ for c, i in enumerate(CompareImages):
     plt.subplots_adjust(wspace=0.001, hspace=0.15, left=0.02, right=1,
                         top=0.98, bottom=0.01)
     plt.draw()
-    plt.savefig(os.path.join(OutputPath, str(VoltageERI[c]) + 'kV' +
-                             str(CurrentERI[c]) + 'uA.png'),
-                bbox_inches='tight')
+    # Save figure and concatenated results
+    plt.savefig(os.path.join(OutputPath, '%02d' % VoltageERI[c] + 'kV' +
+                             str(CurrentERI[c]) + 'uA.png'))
+    ConcatenateImage = numpy.concatenate((ImageERI, ImageHamamatsu), axis=0)
+    plt.imsave(os.path.join(OutputPath, 'Concatenate_%02d' % VoltageERI[c] +
+                            'kV' + str(CurrentERI[c]) + 'uA.png'),
+               ConcatenateImage)
+
 plt.ioff()
 plt.show()
 print 'Done with everything!'
