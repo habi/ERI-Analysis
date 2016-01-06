@@ -70,7 +70,8 @@ for Folder in FolderList:
     try:
         os.makedirs(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
                                  'ERI-Analysis', 'Images',
-                                 'Resolution-' + os.path.basename(FolderToLookAt)))
+                                 'Resolution-' +
+                                 os.path.basename(FolderToLookAt)))
     except OSError:
         # Directory already exists
         pass
@@ -98,11 +99,11 @@ for Folder in FolderList:
     # Plot everything
     for ImageCounter, ImageName in enumerate(ImageList):
         print '%02d/%s: Reading image %s and plotting line profiles' % (
-                ImageCounter + 1, len(ImageList), os.path.basename(ImageName))
+            ImageCounter + 1, len(ImageList), os.path.basename(ImageName))
         ThisVoltage = int(os.path.basename(ImageName).split('_')[1][:-2])
         ThisCurrent = int(os.path.basename(ImageName).split('_')[2][:-2])
-        # Only do the thing if the current is not larger than the exponential fit
-        # that we found with VoltageVsCurrentExponentialFit.py, which is
+        # Only do the thing if the current is not larger than the exponential
+        # fit that we found with VoltageVsCurrentExponentialFit.py, which is
         # 1.05e-01 * numpy.exp(9.04e-02 * x) + 8.72e+00 (and a safety margin).
         if ThisCurrent < 1.05e-1 * numpy.exp(9.04e-2 * ThisVoltage) + 20:
             # Which image are we looking at from all the ones recorded?
@@ -118,10 +119,10 @@ for Folder in FolderList:
             # Show the current image
             plt.subplot(222)
             plt.cla()
-            plt.title('Contrast stretched Image %s/%s: %s\nWith line profiles and red '
-                      'region used for mean and STD' % (ImageCounter + 1,
-                                                        len(ImageList),
-                                                        os.path.basename(ImageName)))
+            plt.title('Contrast stretched Image %s/%s: %s\nWith line profiles '
+                      'and red region used for mean and STD' % (
+                          ImageCounter + 1, len(ImageList),
+                          os.path.basename(ImageName)))
             Img = read_raw(ImageName)
             plt.imshow(contrast_stretch(Img))
             # Show where line profiles have been calculated
@@ -131,10 +132,10 @@ for Folder in FolderList:
                 plt.plot((SelectedPoints[0][0], SelectedPoints[1][0]),
                          (SelectedPoints[0][1], SelectedPoints[1][1]),
                          color=UserColors[CoordinateCounter], marker='o')
-                plt.plot(SelectedPoints[0][0], SelectedPoints[0][1], color='yellow',
-                         marker='o', alpha=0.618)
-                plt.plot(SelectedPoints[1][0], SelectedPoints[1][1], color='black',
-                         marker='o', alpha=0.618)
+                plt.plot(SelectedPoints[0][0], SelectedPoints[0][1],
+                         color='yellow', marker='o', alpha=0.618)
+                plt.plot(SelectedPoints[1][0], SelectedPoints[1][1],
+                         color='black', marker='o', alpha=0.618)
             plt.axis('off')
             # Crop region for Standard deviation
             CropSize = 900
@@ -150,9 +151,9 @@ for Folder in FolderList:
             plt.subplot(212)
             plt.cla()
             Shift = 900
-            plt.title('Line profiles\nRed region marks the mean (%0.2f) +- STD of '
-                      'cropped region. Second and third profile shifted up by %s)' %
-                      (numpy.mean(Crop), Shift))
+            plt.title('Line profiles\nRed region marks the mean (%0.2f) +- STD'
+                      ' of cropped region. Second and third profile shifted up '
+                      'by %s)' % (numpy.mean(Crop), Shift))
             for CoordinateCounter, CurrentCoordinates in enumerate(Coordinates):
                 SelectedPoints, LineProfile = lineprofiler.lineprofile(
                     Img, CurrentCoordinates, showimage=False)
@@ -161,11 +162,11 @@ for Folder in FolderList:
                 plt.plot(0, numpy.mean(Crop) + CoordinateCounter * Shift,
                          color='yellow', marker='o', markersize=15, alpha=0.618)
                 plt.plot(len(LineProfile) - 1,
-                         numpy.mean(Crop) + CoordinateCounter * Shift, color='black',
-                         marker='o', markersize=15, alpha=0.618)
+                         numpy.mean(Crop) + CoordinateCounter * Shift,
+                         color='black', marker='o', markersize=15, alpha=0.618)
                 # Plot mean and STD of cropped region
-                plt.axhline(numpy.mean(Crop) + CoordinateCounter * Shift, linestyle='-',
-                            color='r', alpha=0.25)
+                plt.axhline(numpy.mean(Crop) + CoordinateCounter * Shift,
+                            linestyle='-', color='r', alpha=0.25)
                 plt.fill_between(range(2048),
                                  numpy.mean(Crop) + CoordinateCounter * Shift +
                                  numpy.std(Crop),
@@ -202,8 +203,7 @@ for Folder in FolderList:
             plt.savefig(os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
                                      'ERI-Analysis', 'Images',
                                      'Resolution-' + os.path.basename(FolderToLookAt),
-                                     os.path.splitext(os.path.basename(ImageName))[0] +
-                                     '.png'), bbox_inches='tight')
+                                     os.path.splitext(os.path.basename(ImageName))[0] + '.png'))
         else:
             print '\tThe current of %s uA is larger than the fit of %0.2f uA, ' \
                   'thus not looking at the image' % (ThisCurrent,
