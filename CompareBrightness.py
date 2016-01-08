@@ -93,7 +93,7 @@ FolderList = sorted(os.walk(StartPath).next()[1])
 # Filter list to remove the folders to disregard
 FolderList = [i if 'DoNotUse' not in i else '' for i in FolderList]
 # Only show these folders (Wrench, Grid, Current)
-FolderList = [i if 'Wrench' in i else '' for i in FolderList]
+FolderList = [i if 'Grid' in i else '' for i in FolderList]
 ERIFolders = [i if 'ERI' in i else '' for i in FolderList]
 HamamatsuFolders = [i if 'Hamamatsu' in i else '' for i in FolderList]
 # Disregard now emtpy list elements: http://stackoverflow.com/a/3845449
@@ -164,6 +164,8 @@ plt.plot(VoltageMatch, CurrentMatch, c=colors[2], label='Best Match')
 plt.legend(loc='upper left')
 plt.xlabel('Voltage [kV]')
 plt.ylabel('Current [uA]')
+plt.xlim([20, 70])
+plt.ylim([0, 60])
 plt.draw()
 plt.savefig(os.path.join(OutputPath, 'Match-' +
                          os.path.basename(os.path.dirname(CompareImages[0])) +
