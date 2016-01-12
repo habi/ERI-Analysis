@@ -133,7 +133,7 @@ CurrentMatch = [int(os.path.basename(i).split('_')[2][:-2]) for i in
 
 # Display results
 plt.ion()
-plt.figure(figsize=[18, 13])
+plt.figure(figsize=[18, 12])
 gs = gridspec.GridSpec(4, 4)
 plt.subplot(gs[1:3, 0])
 plt.scatter(VoltageHamamatsu, CurrentHamamatsu, c=colors[0], alpha=0.25,
@@ -158,7 +158,7 @@ for c, i in enumerate(CompareImages):
     plt.subplot(gs[2:, 1:])
     plt.imshow(plt.imread(i))
     plt.axis('off')
-    plt.subplots_adjust(wspace=0.03, hspace=0, left=0, right=1,
+    plt.subplots_adjust(wspace=0.02, hspace=0, left=0.03, right=1,
                         top=1, bottom=0)
     plt.draw()
     # Save figure and concatenated results
