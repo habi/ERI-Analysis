@@ -61,7 +61,10 @@ plt.rc('axes', grid=True)
 UserColors = ["#84DEBD", "#D1B9D4", "#D1D171"]
 
 StartPath = '/sls/X02DA/data/e13960/Data20/Gantry/Images'
-FolderList = sorted(os.walk(StartPath).next()[1])
+# Only do 'Grid' Folders
+FolderList = [i if 'Grid' in i else '' for i in sorted(os.walk(StartPath).next()[1])]
+# Disregard now emtpy list elements: http://stackoverflow.com/a/3845449
+FolderList = [x for x in FolderList if x]
 for Folder in FolderList:
     FolderToLookAt = os.path.join(StartPath, Folder)
     ImageList = sorted(glob.glob(os.path.join(FolderToLookAt, '*.raw')))
@@ -162,26 +165,26 @@ for Folder in FolderList:
                     xStart = 240
                     xShift = 320
                     yStart = numpy.mean(Crop) + 150
-                    if CoordinateCounter == 0:
+                    if CoordinateCounter == 2:
                         # Annotate first line profile if we have imaged the grid
-                        plt.annotate('2.0 lp/mm', xy=(xStart + 1 * xShift, yStart))
-                        plt.annotate('2.2 lp/mm', xy=(xStart + 2 * xShift, yStart))
-                        plt.annotate('2.5 lp/mm', xy=(xStart + 3 * xShift, yStart))
-                        plt.annotate('2.8 lp/mm', xy=(xStart + 4 * xShift, yStart))
+                        plt.annotate('2.8 lp/mm', xy=(xStart + 1 * xShift, yStart))
+                        plt.annotate('2.5 lp/mm', xy=(xStart + 2 * xShift, yStart))
+                        plt.annotate('2.2 lp/mm', xy=(xStart + 3 * xShift, yStart))
+                        plt.annotate('2.0 lp/mm', xy=(xStart + 4 * xShift, yStart))
                     elif CoordinateCounter == 1:
                         # Annotate second line profile
-                        plt.annotate('3.1 lp/mm', xy=(xStart, yStart))
-                        plt.annotate('3.4 lp/mm', xy=(xStart + 1 * xShift, yStart))
+                        plt.annotate('4.3 lp/mm', xy=(xStart, yStart))
+                        plt.annotate('4.0 lp/mm', xy=(xStart + 1 * xShift, yStart))
                         plt.annotate('3.7 lp/mm', xy=(xStart + 2 * xShift, yStart))
-                        plt.annotate('4.0 lp/mm', xy=(xStart + 3 * xShift, yStart))
-                        plt.annotate('4.3 lp/mm', xy=(xStart + 4 * xShift, yStart))
+                        plt.annotate('3.4 lp/mm', xy=(xStart + 3 * xShift, yStart))
+                        plt.annotate('3.1 lp/mm', xy=(xStart + 4 * xShift, yStart))
                     else:
                         # Annotate third line profile
-                        plt.annotate('4.6 lp/mm', xy=(xStart, yStart))
-                        plt.annotate('5.0 lp/mm', xy=(xStart + 1 * xShift, yStart))
+                        plt.annotate('6.0 lp/mm', xy=(xStart, yStart))
+                        plt.annotate('5.6 lp/mm', xy=(xStart + 1 * xShift, yStart))
                         plt.annotate('5.3 lp/mm', xy=(xStart + 2 * xShift, yStart))
-                        plt.annotate('5.6 lp/mm', xy=(xStart + 3 * xShift, yStart))
-                        plt.annotate('6.0 lp/mm', xy=(xStart + 4 * xShift, yStart))
+                        plt.annotate('5.0 lp/mm', xy=(xStart + 3 * xShift, yStart))
+                        plt.annotate('4.6 lp/mm', xy=(xStart + 4 * xShift, yStart))
                 # Gray region to 2xSTD
                 plt.fill_between(range(2048),
                                  numpy.mean(Crop) + 2 * numpy.std(Crop),
