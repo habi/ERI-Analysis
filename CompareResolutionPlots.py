@@ -9,7 +9,6 @@ Script to compare two line profile plots with eatch other.
 # Imports
 import os
 import glob
-import numpy
 import platform
 import matplotlib
 # Make sure we are running a good version of matplotlib (i.e. > 1)
@@ -24,43 +23,8 @@ if float(str(matplotlib.__version__)[:3]) < 1:
 import matplotlib.pylab as plt
 import matplotlib.gridspec as gridspec
 
+from ERIfunctions import *
 
-def AskUser(Blurb, Choices):
-    """
-    Ask for user input.
-    Based on function in MasterThesisIvan.ini
-    """
-    print(Blurb)
-    for Counter, Item in enumerate(sorted(Choices)):
-        print '    * [' + str(Counter) + ']:', Item
-    Selection = []
-    while Selection not in range(len(Choices)):
-        try:
-            Selection = int(input(' '.join(['Please enter the choice you',
-                                            'want [0-' +
-                                            str(len(Choices) - 1) +
-                                            ']:'])))
-        except:
-            print 'You actually have to select *something*'
-        if Selection not in range(len(Choices)):
-            print 'Try again with a valid choice'
-    print 'You selected', sorted(Choices)[Selection]
-    return sorted(Choices)[Selection]
-
-
-def bold(msg):
-    """
-    Enable bold and colorful output on the command line (http://is.gd/HCaDv9)
-    """
-    return u'\033[1m%s\033[0m' % msg
-
-
-# Display all images consistently
-plt.rc('image', cmap='gray', interpolation='nearest')
-# Make lines a bit wider
-plt.rc('lines', linewidth=2, marker='o')
-# Show background grid
-plt.rc('axes', grid=True)
 # Colors from 'I want hue'
 colors = ["#84DEBD", "#D1B9D4", "#D1D171"]
 
@@ -76,10 +40,8 @@ HamamatsuFolders = [i if 'Hamamatsu' in i else '' for i in FolderList]
 ERIFolders = [x for x in ERIFolders if x]
 HamamatsuFolders = [x for x in HamamatsuFolders if x]
 
-ChosenERI = AskUser('Which ERI folder shall we use?', ERIFolders)
-ChosenHamamatsu = AskUser('Which Hamamatsu folder shall we use to compare '
-                          'with %s?' % bold(ChosenERI), HamamatsuFolders)
-
+ChosenERI = ask_user('Which ERI folder shall we use?', ERIFolders)
+ChosenHamamatsu = ask_user('Which Hamamatsu folder shall we use to compare with %s?' % bold(ChosenERI), HamamatsuFolders)
 
 # Prepare output directory
 OutputPath = os.path.join(os.path.expanduser('~'), 'Data20', 'CNT',
@@ -172,4 +134,3 @@ for c, i in enumerate(CompareImages):
 plt.ioff()
 plt.show()
 print 'Done with everything!'
-
