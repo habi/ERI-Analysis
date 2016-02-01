@@ -23,7 +23,7 @@ def rand_jitter(arr):
     Jitter data to avoid overlapping data points.
     Based on http://stackoverflow.com/a/21276920/323100
     """
-    stdev = .005*(max(arr)-min(arr))
+    stdev = .005 * (max(arr) - min(arr))
     return arr + numpy.random.randn(len(arr)) * stdev
 
 StartPath = os.path.join(os.path.expanduser('~'), 'Data20', 'Gantry', 'Images')
@@ -80,8 +80,7 @@ try:
                                                 OptimalValues[2])
         plt.plot(sorted(Voltage),
                  sorted(fitting_function(Voltage, *OptimalValues)), 'k-',
-                 label='Fitted Curve (%0.2f*e^%0.2e*x+%0.2f)' % (
-                OptimalValues[0], OptimalValues[1], OptimalValues[2]))
+                 label='Fitted Curve (%0.2f*e^%0.2e*x+%0.2f)' % (OptimalValues[0], OptimalValues[1], OptimalValues[2]))
     except RuntimeError:
         print 'No optimal exponential fit parameters found'
 except AttributeError:

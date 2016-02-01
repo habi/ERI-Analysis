@@ -15,69 +15,8 @@ import os
 import glob
 import matplotlib.pylab as plt
 
+from ERIfunctions import *
 
-#  Functions
-def read_raw(filename, width=2048, height=1024, verbose=False):
-    """
-    Read the .raw file from the ShadoBox into a numpy array, ready to display
-    """
-    if verbose:
-        print 'Reading image %s' % filename
-    # Reading RAW image from the ShadoBox detector. The image is saved as 16
-    # bit, with the camera width and height. We swap the endianness of the
-    # image to display it nicely.
-    image = numpy.fromfile(filename, dtype=numpy.uint16, count=-1).reshape(
-        height, width).byteswap()
-    # Flip image upside down and left-right, so we can look at it without
-    # craning our neck.
-    image = numpy.flipud(image)
-    return image
-
-
-def contrast_stretch(image, std=3, verbose=False):
-    """
-    Clip image histogram to the mean \pm N standard deviations, according to
-    http://is.gd/IBV4Gw. I am using three standard deviations around the mean.
-    """
-    if verbose:
-        print 'Clipping image from [' + str(numpy.min(image)) + ':' + \
-              str(numpy.max(image)) + '] to',
-    clippedimage = numpy.clip(image, numpy.mean(image) - (std * numpy.std(
-        image)), numpy.mean(image) + (std * numpy.std(image)))
-    if verbose:
-        print '[' + str(numpy.min(clippedimage)) + ':' + str(numpy.max(
-            clippedimage)) + ']'
-    return clippedimage
-
-
-def ask_user(blurb, choices):
-    """
-    Ask for user input.
-    Based on function in MasterThesisIvan.ini
-    """
-    print(blurb)
-    for Counter, Item in enumerate(sorted(choices)):
-        print '    * [' + str(Counter) + ']:', Item
-    selection = []
-    while selection not in range(len(choices)):
-        try:
-            selection = int(input(' '.join(['Please enter the choice you',
-                                            'want [0-' +
-                                            str(len(choices) - 1) +
-                                            ']:'])))
-        except:
-            print 'You actually have to select *something*'
-        if selection not in range(len(choices)):
-            print 'Try again with a valid choice'
-    print 'You selected', sorted(choices)[selection]
-    return sorted(choices)[selection]
-
-# Display all images consistently
-plt.rc('image', cmap='gray', interpolation='nearest')
-# Make lines a bit wider
-plt.rc('lines', linewidth=2)
-# Show background grid
-plt.rc('axes', grid=True)
 # Colors from 'I want hue'
 colors = ["#84DEBD", "#D1B9D4", "#D1D171"]
 
