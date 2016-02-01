@@ -25,13 +25,15 @@ from matplotlib.patches import Rectangle
 
 from ERIfunctions import *
 
+
 #  Functions
 def gaussianfit(data):
     from scipy.optimize import curve_fit
+
     # Define gaussian model function which we use to calculate a fit to the data
     def gauss(x, *p):
         A, mu, sigma = p
-        return A * numpy.exp(-(x - mu)**2 / (2. * sigma**2))
+        return A * numpy.exp(-(x - mu) ** 2 / (2. * sigma ** 2))
     # Fit with initial guess p0
     p0 = [50, len(data) / 2, 0.2]
     try:
@@ -41,11 +43,14 @@ def gaussianfit(data):
     except RuntimeError:
         return numpy.zeros(len(data))
 
+
 def LSF(edgespreadfunction):
     return numpy.abs(numpy.diff(edgespreadfunction))
 
+
 def MTF(linespreadfunction):
     return numpy.abs(numpy.fft.fft(linespreadfunction))[:len(linespreadfunction) / 2]
+
 
 def normalize(data):
     return (data - numpy.min(data)) / (numpy.max(data) - numpy.min(data))
@@ -194,7 +199,7 @@ for c, i in enumerate(CompareImages):
         plt.plot(CropHamamatsu[line, :], alpha=0.618, c=Colors[ctr + 2], linewidth=1)
     plt.plot(ResponseERI, c=Colors[0], label='ERI')
     plt.plot(ResponseHamamatsu, c=Colors[1], label='Hamamatsu')
-    plt.ylim(0, 2**12)
+    plt.ylim(0, 2 ** 12)
     plt.legend(loc='best')
 
     # Calculate MTF.
@@ -207,7 +212,7 @@ for c, i in enumerate(CompareImages):
     # which then acts as an input for the `MTF` function above.
     plt.subplot(154)
     plt.title('Line spread function')
-    plt.plot(LSF(ResponseERI), c=Colors[2], linestyle='dashed', label = 'ERI Data')
+    plt.plot(LSF(ResponseERI), c=Colors[2], linestyle='dashed', label='ERI Data')
     plt.plot(LSF(ResponseHamamatsu), c=Colors[3], linestyle='dashed', label='Hamamatsu Data')
     plt.plot(gaussianfit(LSF(ResponseERI)), c=Colors[0], label='ERI fit')
     plt.plot(gaussianfit(LSF(ResponseHamamatsu)), c=Colors[1], label='Hamamatsu fit')
@@ -220,7 +225,7 @@ for c, i in enumerate(CompareImages):
              label='MTF Hamamatsu')
     plt.legend(loc='best')
     # Save figure and concatenated results
-    plt.savefig(os.path.join(OutputPath, 'MTF%03dkV%03duA.png' % (VoltageERI[c] , CurrentERI[c])))
+    plt.savefig(os.path.join(OutputPath, 'MTF%03dkV%03duA.png' % (VoltageERI[c], CurrentERI[c])))
     plt.draw()
     plt.pause(0.01)
 plt.ioff()

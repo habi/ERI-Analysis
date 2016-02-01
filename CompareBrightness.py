@@ -77,7 +77,7 @@ for c, i in enumerate(ImageListERI):
     # Get the closest value to the current from Hamamatsu list. Based on
     # http://stackoverflow.com/a/9706105/323100
     ChosenOne = min(enumerate([CurrentHamamatsu[i] for i in IndexList]),
-                    key=lambda x: abs(x[1]-CurrentERI[c]))
+                    key=lambda x: abs(x[1] - CurrentERI[c]))
     print 'Found a match in %s' % os.path.basename(Candidates[ChosenOne[0]])
     CompareImages.append(Candidates[ChosenOne[0]])
 print 80 * '-'
@@ -117,7 +117,7 @@ for c, i in enumerate(CompareImages):
     ImageHamamatsu = read_raw(i)
     BrightnessERI.append(numpy.mean(ImageERI))
     BrightnessHamamatsu.append(numpy.mean(ImageHamamatsu))
-BrightnessRatio = [a/b for a, b in zip(BrightnessHamamatsu, BrightnessERI)]
+BrightnessRatio = [a / b for a, b in zip(BrightnessHamamatsu, BrightnessERI)]
 
 # Plot Brightness with kV as x-axis (Image 0 is 25 kV)
 plt.subplot(231)
@@ -141,7 +141,7 @@ plt.plot(range(25, 25 + len(BrightnessERI)), BrightnessERI, c=colors[0],
 plt.plot(range(25, 25 + len(BrightnessHamamatsu)), BrightnessHamamatsu,
          c=colors[1], label=os.path.basename(os.path.dirname(i)))
 plt.xlim([20, 70])
-plt.ylim([0, 2**12])
+plt.ylim([0, 2 ** 12])
 plt.xlabel('kV')
 plt.ylabel('Mean image brightness')
 plt.title('Average brightness to voltage')
@@ -169,7 +169,7 @@ plt.subplot(232)
 plt.title('Median difference image Hamamatsu\n(contrast stretched)')
 plt.imshow(contrast_stretch(read_raw(CompareImages[BrightnessRatio.index(numpy.median(BrightnessRatio))])))
 currentAxis = plt.gca()
-currentAxis.add_patch(Rectangle((0,0), 2048, 1024, color=colors[1],
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[1],
                                 alpha=0.309))
 plt.axis('off')
 plt.subplot(235)
@@ -177,20 +177,20 @@ plt.title('Median difference image ERI\n(contrast stretched)')
 plt.imshow(contrast_stretch(read_raw(ImageListERI[BrightnessRatio.index(
     numpy.median(BrightnessRatio))])))
 currentAxis = plt.gca()
-currentAxis.add_patch(Rectangle((0,0), 2048, 1024, color=colors[0],
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[0],
                                 alpha=0.309))
 plt.axis('off')
 plt.subplot(233)
 plt.title('Maximal difference image Hamamatsu\n(contrast stretched)')
 plt.imshow(contrast_stretch(read_raw(CompareImages[BrightnessRatio.index(max(BrightnessRatio))])))
 currentAxis = plt.gca()
-currentAxis.add_patch(Rectangle((0,0), 2048, 1024, color=colors[3], alpha=0.309))
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[3], alpha=0.309))
 plt.axis('off')
 plt.subplot(236)
 plt.title('Maximal difference image ERI\n(contrast stretched)')
 plt.imshow(contrast_stretch(read_raw(ImageListERI[BrightnessRatio.index(max(BrightnessRatio))])))
 currentAxis = plt.gca()
-currentAxis.add_patch(Rectangle((0,0), 2048, 1024, color=colors[2], alpha=0.309))
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[2], alpha=0.309))
 plt.axis('off')
 plt.draw()
 plt.savefig(os.path.join(OutputPath, 'Comparison-' +

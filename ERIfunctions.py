@@ -12,6 +12,7 @@ plt.rc('axes', grid=True)
 
 import numpy
 
+
 def read_raw(filename, width=2048, height=1024, verbose=False):
     """
     Read the .raw file from the ShadoBox into a numpy array, ready to display
@@ -66,6 +67,7 @@ def ask_user(Blurb, Choices):
             print 'Try again with a valid choice'
     print 'You selected', sorted(Choices)[Selection]
     return sorted(Choices)[Selection]
+
 
 def bold(msg):
     """
