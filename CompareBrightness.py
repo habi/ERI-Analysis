@@ -15,10 +15,17 @@ from matplotlib.patches import Rectangle
 
 from ERIfunctions import *
 
+# Reset markers from standard
+#~ plt.rc('lines', linewidth=2, marker='o')
 # Colors from 'I want hue'
 colors = ["#B2E183", "#D3B8D8", "#80DCCB", "#E5BC6E"]
 
-StartPath = '/sls/X02DA/data/e13960/Data20/Gantry/Images'
+Ubuntu = True
+if Ubuntu:
+    StartPath = '/afs/psi.ch/user/h/haberthuer/slsbl/x02da/e13960/Data20/Gantry/Images'
+else:
+    StartPath = '/sls/X02DA/data/e13960/Data20/Gantry/Images'
+
 # Filter list for only 'Grid' folders: http://stackoverflow.com/a/4260304
 FolderList = sorted(os.walk(StartPath).next()[1])
 # Filter list to remove the folders to disregard
@@ -117,6 +124,13 @@ for c, i in enumerate(CompareImages):
     ImageHamamatsu = read_raw(i)
     BrightnessERI.append(numpy.mean(ImageERI))
     BrightnessHamamatsu.append(numpy.mean(ImageHamamatsu))
+
+# Scale with transmission, according to http://web-docs.gsi.de/~stoe_exp/web_programs/x_ray_absorption/index.php
+Beryllium = numpy.linspace(0.9945, 0.9959, len(BrightnessHamamatsu))
+SiO2 = numpy.linspace(0.7370, 0.9538, len(BrightnessERI))
+BrightnessERI = BrightnessERI / SiO2
+BrightnessHamamatsu = BrightnessHamamatsu / Beryllium
+
 BrightnessRatio = [a / b for a, b in zip(BrightnessHamamatsu, BrightnessERI)]
 
 # Plot Brightness with kV as x-axis (Image 0 is 25 kV)
