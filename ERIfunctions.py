@@ -3,14 +3,15 @@ Functions that we use over and over for analyzing the ERI data.
 And some consistent settings for display.
 """
 
+import numpy
+import matplotlib.pylab as plt
+
 # Display all images consistently
 plt.rc('image', cmap='gray', interpolation='nearest')
 # Make lines a bit wider
-plt.rc('lines', linewidth=2, marker='o')
+plt.rc('lines', linewidth=2)
 # Show background grid
 plt.rc('axes', grid=True)
-
-import numpy
 
 
 def read_raw(filename, width=2048, height=1024, verbose=False):
