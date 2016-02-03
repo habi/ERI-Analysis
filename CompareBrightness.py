@@ -66,7 +66,7 @@ CurrentERI = [int(os.path.basename(i).split('_')[2][:-2]) for i in ImageListERI]
 ImageListHamamatsu = sorted(glob.glob(os.path.join(StartPath, ChosenHamamatsu,
                                                    '*.raw')))
 
-print 'Reading Parameters from %s images in %s' % (len(ImageListERI),
+print 'Reading Parameters from %s images in %s' % (len(ImageListHamamatsu),
                                                    bold(ChosenHamamatsu))
 VoltageHamamatsu = [int(os.path.basename(i).split('_')[1][:-2]) for i in
                     ImageListHamamatsu]
