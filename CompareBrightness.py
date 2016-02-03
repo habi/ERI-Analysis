@@ -12,15 +12,20 @@ import os
 import glob
 import matplotlib.pylab as plt
 from matplotlib.patches import Rectangle
+from scipy import stats
 
 from ERIfunctions import *
 
 # Reset markers from standard
 #~ plt.rc('lines', linewidth=2, marker='o')
 # Colors from 'I want hue'
-colors = ["#B2E183", "#D3B8D8", "#80DCCB", "#E5BC6E"]
+colors = ["#B459CA",
+	  "#5E913F",
+	  "#C06130",
+	  "#C84C78",
+	  "#6A7AB2"]
 
-Ubuntu = True
+Ubuntu = False
 if Ubuntu:
     StartPath = '/afs/psi.ch/user/h/haberthuer/slsbl/x02da/e13960/Data20/Gantry/Images'
 else:
@@ -31,7 +36,7 @@ FolderList = sorted(os.walk(StartPath).next()[1])
 # Filter list to remove the folders to disregard
 FolderList = [i if 'DoNotUse' not in i else '' for i in FolderList]
 # Only show these folders (Wrench, Grid, Current)
-FolderList = [i if 'Grid' in i else '' for i in FolderList]
+FolderList = [i if 'Wrench' in i else '' for i in FolderList]
 ERIFolders = [i if 'ERI' in i else '' for i in FolderList]
 HamamatsuFolders = [i if 'Hamamatsu' in i else '' for i in FolderList]
 # Disregard now emtpy list elements: http://stackoverflow.com/a/3845449
@@ -73,9 +78,7 @@ plt.ion()
 plt.figure(figsize=[8, 6])
 CompareImages = []
 for c, i in enumerate(ImageListERI):
-    print 80 * '-'
-    print 'Finding best matching current from Hamamatsu for %s (%s kV, ' \
-          '%s mA)' % (os.path.basename(i), VoltageERI[c], CurrentERI[c])
+    print 'Looking for best matching current from Hamamatsu for %s (%s kV, %s mA)' % (os.path.basename(i), VoltageERI[c], CurrentERI[c])
     Candidates = []
     for k in ImageListHamamatsu:
         if str(VoltageERI[c]) + 'kV' in k:
@@ -85,19 +88,18 @@ for c, i in enumerate(ImageListERI):
     # http://stackoverflow.com/a/9706105/323100
     ChosenOne = min(enumerate([CurrentHamamatsu[i] for i in IndexList]),
                     key=lambda x: abs(x[1] - CurrentERI[c]))
-    print 'Found a match in %s' % os.path.basename(Candidates[ChosenOne[0]])
+    print '\tFound a match in %s' % os.path.basename(Candidates[ChosenOne[0]])
     CompareImages.append(Candidates[ChosenOne[0]])
-print 80 * '-'
 
 VoltageMatch = [int(os.path.basename(i).split('_')[1][:-2]) for i in
                 CompareImages]
 CurrentMatch = [int(os.path.basename(i).split('_')[2][:-2]) for i in
                 CompareImages]
 
-plt.scatter(VoltageHamamatsu, CurrentHamamatsu, c=colors[0], alpha=0.25,
+plt.scatter(VoltageHamamatsu, CurrentHamamatsu, c=colors[0], alpha=0.309,
             label='Hamamatsu')
-plt.plot(VoltageERI, CurrentERI, c=colors[1], label='ERI')
-plt.plot(VoltageMatch, CurrentMatch, c=colors[2], label='Best Match')
+plt.plot(VoltageERI, CurrentERI, c=colors[1], label='ERI', marker='o')
+plt.plot(VoltageMatch, CurrentMatch, c=colors[2], label='Best Match', marker='o')
 plt.legend(loc='upper left')
 plt.xlabel('Voltage [kV]')
 plt.ylabel('Current [uA]')
@@ -113,98 +115,135 @@ plt.savefig(os.path.join(OutputPath, 'Match-' +
 # Plot brightness of the comparable images in one plot
 BrightnessHamamatsu = []
 BrightnessERI = []
+STDERI = []
+STDHamamatsu = []
 DisplayProgress = True
 plt.figure(figsize=[20, 9])
 for c, i in enumerate(CompareImages):
     print '%s/%s: Comparing %s with %s' % (c + 1, len(CompareImages),
-                                           os.path.basename(i),
-                                           os.path.basename(
-                                               ImageListERI[c]))
+                                           os.path.basename(ImageListERI[c]),
+                                           os.path.basename(i))
     ImageERI = read_raw(ImageListERI[c])
     ImageHamamatsu = read_raw(i)
     BrightnessERI.append(numpy.mean(ImageERI))
+    STDERI.append(numpy.std(ImageERI, axis=None, ddof=0))
     BrightnessHamamatsu.append(numpy.mean(ImageHamamatsu))
+    STDHamamatsu.append(numpy.std(ImageHamamatsu, axis=None, ddof=0))
 
 # Scale with transmission, according to http://web-docs.gsi.de/~stoe_exp/web_programs/x_ray_absorption/index.php
-Beryllium = numpy.linspace(0.9945, 0.9959, len(BrightnessHamamatsu))
-SiO2 = numpy.linspace(0.7370, 0.9538, len(BrightnessERI))
-BrightnessERI = BrightnessERI / SiO2
-BrightnessHamamatsu = BrightnessHamamatsu / Beryllium
+Scale = True
+if Scale:
+    Beryllium = numpy.linspace(0.9945, 0.9959, len(BrightnessHamamatsu))
+    SiO2 = numpy.linspace(0.7370, 0.9538, len(BrightnessERI))
+    BrightnessERI = BrightnessERI / SiO2
+    BrightnessHamamatsu = BrightnessHamamatsu / Beryllium
+    STDERI = STDERI / SiO2
+    STDHamamatsu = STDHamamatsu / Beryllium
+else:
+    BrightnessERI = numpy.array(BrightnessERI)
+    BrightnessHamamatsu = numpy.array(BrightnessHamamatsu)
+    STDERI = numpy.array(STDERI)
+    STDHamamatsu = numpy.array(STDHamamatsu)
+
 
 BrightnessRatio = [a / b for a, b in zip(BrightnessHamamatsu, BrightnessERI)]
 
 # Plot Brightness with kV as x-axis (Image 0 is 25 kV)
-plt.subplot(231)
-# First plot maximal and median images
+plt.subplot(241)
+# First plot brightness values ± STD
+currentplot = plt.gca()
+currentplot.fill_between(range(25, 25 + len(BrightnessERI)), BrightnessERI + STDERI, BrightnessERI - STDERI, facecolor=colors[0], edgecolor='w', alpha=0.309)
+currentplot.fill_between(range(25, 25 + len(BrightnessHamamatsu)), BrightnessHamamatsu + STDHamamatsu, BrightnessHamamatsu - STDHamamatsu, facecolor=colors[1], edgecolor='w', alpha=0.309)
+# Then plot a marker for the minimal, maximal and median images
+plt.plot(25 + BrightnessRatio.index(min(BrightnessRatio)),
+         BrightnessERI[BrightnessRatio.index(min(BrightnessRatio))],
+         color=colors[2], marker='o', markersize=15)
+plt.plot(25 + BrightnessRatio.index(min(BrightnessRatio)),
+         BrightnessHamamatsu[BrightnessRatio.index(min(BrightnessRatio))],
+         color=colors[2], marker='o', markersize=15)
 plt.plot(25 + BrightnessRatio.index(numpy.median(BrightnessRatio)),
          BrightnessERI[BrightnessRatio.index(numpy.median(BrightnessRatio))],
-         color=colors[0], marker='o', markersize=15)
+         color=colors[3], marker='o', markersize=15)
 plt.plot(25 + BrightnessRatio.index(numpy.median(BrightnessRatio)),
-         BrightnessHamamatsu[BrightnessRatio.index(numpy.median(
-             BrightnessRatio))],
-         color=colors[1], marker='o', markersize=15)
+         BrightnessHamamatsu[BrightnessRatio.index(numpy.median(BrightnessRatio))],
+         color=colors[3], marker='o', markersize=15)
 plt.plot(25 + BrightnessRatio.index(max(BrightnessRatio)),
          BrightnessERI[BrightnessRatio.index(max(BrightnessRatio))],
-         color=colors[2], marker='o', markersize=15)
+         color=colors[4], marker='o', markersize=15)
 plt.plot(25 + BrightnessRatio.index(max(BrightnessRatio)),
          BrightnessHamamatsu[BrightnessRatio.index(max(BrightnessRatio))],
-         color=colors[3], marker='o', markersize=15)
-# Plot all values
+         color=colors[4], marker='o', markersize=15)
+# Finally plot the brightness values on top of that
 plt.plot(range(25, 25 + len(BrightnessERI)), BrightnessERI, c=colors[0],
-         label=os.path.basename(os.path.dirname(ImageListERI[0])))
+         label=r'%s $\pm$ STD' % os.path.basename(os.path.dirname(ImageListERI[0])))
 plt.plot(range(25, 25 + len(BrightnessHamamatsu)), BrightnessHamamatsu,
-         c=colors[1], label=os.path.basename(os.path.dirname(i)))
+         c=colors[1], label=r'%s $\pm$ STD' % os.path.basename(os.path.dirname(ImageListHamamatsu[0])))
 plt.xlim([20, 70])
 plt.ylim([0, 2 ** 12])
 plt.xlabel('kV')
-plt.ylabel('Mean image brightness')
-plt.title('Average brightness to voltage')
+plt.ylabel('Gray value')
+if Scale:
+    plt.title('Mean brightness to voltage\n(Adjusted for transmission of output window)')
+else:
+    plt.title('Mean brightness to voltage')
 plt.legend(loc='best')
 
 # Plot Ratio with kV as x-axis (Image 0 is 25 kV)
-plt.subplot(234)
+plt.subplot(245)
 plt.plot(range(25, 25 + len(BrightnessERI)), BrightnessRatio, 'k',
          label='Hamamatsu / ERI')
-plt.plot(25 + BrightnessRatio.index(max(BrightnessRatio)), max(BrightnessRatio),
-         color='red', marker='o', markersize=15, alpha=0.309,
-         label='Maximal difference (%0.2fx)' % max(BrightnessRatio))
+plt.plot(25 + BrightnessRatio.index(min(BrightnessRatio)), min(BrightnessRatio),
+         color=colors[2], marker='o', markersize=15, alpha=0.309,
+         label='Minimal difference (%0.2fx)' % min(BrightnessRatio))
 plt.plot(25 + BrightnessRatio.index(numpy.median(BrightnessRatio)),
-         numpy.median(BrightnessRatio), color='green', marker='o',
-         markersize=15, alpha=0.309,
-         label='Median difference (%0.2fx)' % numpy.median(BrightnessRatio))
+         numpy.median(BrightnessRatio), color=colors[3], marker='o', markersize=15,
+         alpha=0.309, label='Median difference (%0.2fx)' % numpy.median(BrightnessRatio))
+plt.plot(25 + BrightnessRatio.index(max(BrightnessRatio)), max(BrightnessRatio),
+         color=colors[4], marker='o', markersize=15, alpha=0.309,
+         label='Maximal difference (%0.2fx)' % max(BrightnessRatio))
 plt.xlim([20, 70])
 plt.ylim([0, 6])
 plt.legend(loc='best')
 plt.xlabel('kV')
 plt.ylabel('Relative brightness')
 plt.title('Brightness difference')
-# Show images from max and median
-plt.subplot(232)
+# Show images from min, max and median
+plt.subplot(242)
+plt.title('Minimal difference image Hamamatsu\n(contrast stretched)')
+plt.imshow(contrast_stretch(read_raw(CompareImages[BrightnessRatio.index(min(BrightnessRatio))])))
+currentAxis = plt.gca()
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[2], alpha=0.309))
+plt.axis('off')
+plt.subplot(246)
+plt.title('Minimal difference image ERI\n(contrast stretched)')
+plt.imshow(contrast_stretch(read_raw(ImageListERI[BrightnessRatio.index(min(BrightnessRatio))])))
+currentAxis = plt.gca()
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[2], alpha=0.309))
+plt.axis('off')
+plt.subplot(243)
 plt.title('Median difference image Hamamatsu\n(contrast stretched)')
 plt.imshow(contrast_stretch(read_raw(CompareImages[BrightnessRatio.index(numpy.median(BrightnessRatio))])))
 currentAxis = plt.gca()
-currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[1],
-                                alpha=0.309))
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[3], alpha=0.309))
 plt.axis('off')
-plt.subplot(235)
+plt.subplot(247)
 plt.title('Median difference image ERI\n(contrast stretched)')
 plt.imshow(contrast_stretch(read_raw(ImageListERI[BrightnessRatio.index(
     numpy.median(BrightnessRatio))])))
 currentAxis = plt.gca()
-currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[0],
-                                alpha=0.309))
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[3], alpha=0.309))
 plt.axis('off')
-plt.subplot(233)
+plt.subplot(244)
 plt.title('Maximal difference image Hamamatsu\n(contrast stretched)')
 plt.imshow(contrast_stretch(read_raw(CompareImages[BrightnessRatio.index(max(BrightnessRatio))])))
 currentAxis = plt.gca()
-currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[3], alpha=0.309))
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[4], alpha=0.309))
 plt.axis('off')
-plt.subplot(236)
+plt.subplot(248)
 plt.title('Maximal difference image ERI\n(contrast stretched)')
 plt.imshow(contrast_stretch(read_raw(ImageListERI[BrightnessRatio.index(max(BrightnessRatio))])))
 currentAxis = plt.gca()
-currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[2], alpha=0.309))
+currentAxis.add_patch(Rectangle((0, 0), 2048, 1024, color=colors[4], alpha=0.309))
 plt.axis('off')
 plt.draw()
 plt.savefig(os.path.join(OutputPath, 'Comparison-' +
